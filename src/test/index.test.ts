@@ -7,12 +7,12 @@ describe("Basic functionality with primitives", () => {
     })
     test("Subscribe with initial callback", () => {
         const observable = new Observable<number>(5);
-        observable.subscribe(val => expect(val).toEqual(5), true)
+        observable.subscribe(val => { expect(val).toEqual(5) }, { fireOnSubscribe: true })
     })
     test("Mutate with 2 subscribers", () => {
         const observable = new Observable<number>(5);
-        observable.subscribe(val => expect(val).toEqual(10))
-        observable.subscribe(val => expect(val).not.toEqual(5))
+        observable.subscribe(val => { expect(val).toEqual(10) })
+        observable.subscribe(val => { expect(val).not.toEqual(5) })
         observable.mutate((val) => val + 5);
     })
 })
@@ -20,13 +20,34 @@ describe("Basic functionality with primitives", () => {
 describe("Advance features", () => {
     test("Unsubscribe", () => {
         function callback(val: number) {
-            return val;
+            //Perform some action with this value
+
+            expect(val).toEqual(5);
         }
         const callbackFn = jest.fn(callback);
         const observable = new Observable<number>(5);
-        const subscription = observable.subscribe(callbackFn, true);
-        observable.unsubscribe(subscription.id);
-        observable.mutate(val => val + 5);
-        expect(callbackFn).toBeCalledTimes(1);
+        return observable.subscribe(callbackFn, { fireOnSubscribe: true }).then(sub => {
+            observable.unsubscribe(sub);
+            observable.mutate(val => val + 5);
+            expect(callbackFn).toBeCalledTimes(1);
+        });
+
+    })
+    test("Async callback", () => {
+        function callback(val: number) {
+            return new Promise(res => {
+                setTimeout(() => {
+                    expect(val).toEqual(5);
+                    res()
+                }, 1000)
+            })
+        }
+
+        const jestFn = jest.fn(callback);
+        const observable = new Observable<number>(5);
+        return observable.subscribe(jestFn, {
+            await: true,
+            fireOnSubscribe: true
+        })
     })
 })
