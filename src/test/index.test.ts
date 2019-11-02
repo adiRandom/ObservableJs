@@ -39,7 +39,7 @@ describe("Advance features", () => {
                 setTimeout(() => {
                     expect(val).toEqual(5);
                     res()
-                }, 1000)
+                }, 4000)
             })
         }
 
@@ -49,5 +49,26 @@ describe("Advance features", () => {
             await: true,
             fireOnSubscribe: true
         })
+    })
+    test("Priority", () => {
+        function callback(value: number) {}
+        const jestFn = jest.fn(callback);
+        const observable = new Observable<number>(5);
+
+        return observable.subscribe(value => jestFn(value + 5), { priority: 1 })
+            .then(() => observable.subscribe(value => jestFn(value + 0), { priority: 2 }))
+            .then(() => observable.subscribe(value => jestFn(value + 2), { priority: 2 }))
+            .then(() => observable.subscribe(value => jestFn(value + 10)))
+            .then(() => {
+                observable.mutate(value => 10)
+                expect(jestFn.mock.calls[0][0]).toEqual(10);
+                expect(jestFn.mock.calls[1][0]).toEqual(12);
+                expect(jestFn.mock.calls[2][0]).toEqual(15);
+                expect(jestFn.mock.calls[3][0]).toEqual(20);
+            })
+
+
+
+
     })
 })
