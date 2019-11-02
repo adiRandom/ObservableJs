@@ -1,13 +1,14 @@
 {
-  "name": "observablejs",
+  "name": "@adi_random/observable-js",
   "version": "1.0.0",
   "description": "Observables for Javascript and Typescript",
   "main": "dist/index.js",
+  "private": false,
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "jest",
     "build": "tsc",
-    "publish": "npm run build && npm publish"
+    "publish": "npm run build && npm publish --access=public"
   },
   "repository": {
     "type": "git",
